@@ -9,6 +9,7 @@ from routes.chat_routes import chat_bp
 from routes.file_routes import file_bp
 from routes.whatsapp_routes import whatsapp_bp
 from routes.kb_routes import kb_bp
+from routes.twilio_routes import twilio_bp
 
 # Pinecone Initialization
 from utils.pinecone_handler import initialize_pinecone
@@ -24,7 +25,6 @@ app = Flask(__name__)
 # CORS config for Vercel frontend
 CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
 
-
 # Initialize Pinecone
 initialize_pinecone()
 
@@ -32,12 +32,17 @@ initialize_pinecone()
 app.register_blueprint(chat_bp, url_prefix="/api/chat")
 app.register_blueprint(file_bp, url_prefix="/api/files")
 app.register_blueprint(whatsapp_bp)
+app.register_blueprint(twilio_bp)
+app.register_blueprint(kb_bp, url_prefix="/api/kb")
+
 @app.route("/uploads/<filename>")
 def uploaded_file(filename):
     return send_from_directory("uploads", filename)
-app.register_blueprint(kb_bp, url_prefix="/api/kb")
 
 @app.route('/api/files/list')
+def list_files():
+    # You need to add the actual function body here
+    return {"files": []}
 
 # Test Route
 @app.route("/api/test-save-report")
@@ -55,4 +60,5 @@ def index():
 # ✅ Railway-compatible app startup
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(debug=True, host="0.0.0.0", port=port)
+    debug = os.environ.get("DEBUG", "False").lower() == "true"
+    app.run(debug=debug, host="0.0.0.0", port=port)
